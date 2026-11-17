@@ -29,9 +29,11 @@ public class NotesRepository : INotesRepository
         return note;
     }
     
-    public Note Delete(Note note)
+    public bool Delete(Guid id)
     {
+        var note  = _notes.FirstOrDefault(n => n.Id == id);
+        if (note is null) return false;
         _notes.Remove(note);
-        return note;
+        return true;
     }
 }

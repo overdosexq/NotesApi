@@ -7,5 +7,5 @@ public interface INotesRepository
     List<Note> GetAll();
     Note GetById(Guid id);
     Note Create(Note note);
-    Note Delete(Note note);
+    bool Delete(Guid id);
 }

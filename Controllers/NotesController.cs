@@ -40,5 +40,12 @@ public class NotesController : ControllerBase
             return Ok(notes);
         return NoContent();
     }
-    
+
+    [HttpDelete("{id:guid}")]
+    public IActionResult Delete(Guid id)
+    {
+        var isDeleted = _notesService.Delete(id);
+        if (!isDeleted) return NotFound();
+        return NoContent();
+    }
 }

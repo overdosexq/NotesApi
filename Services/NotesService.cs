@@ -26,4 +26,9 @@ public class NotesService : INotesService
     {
         return _notesRepository.GetAll();
     }
+
+    public bool Delete(Guid id)
+    {
+        return _notesRepository.Delete(id);
+    }
 }
