@@ -19,7 +19,7 @@ public class NotesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<NoteResponse>> Create(CreateNoteRequest request, CancellationToken cancellationToken)
     {
-        var createdNote = await _notesService.CreateAsync(request.Title, request.Content, cancellationToken);
+        var createdNote = await _notesService.CreateAsync(request, cancellationToken);
         return CreatedAtAction(nameof(GetById),
          new { id = createdNote.Id },
          ToResponse(createdNote));

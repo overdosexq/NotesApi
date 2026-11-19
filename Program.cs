@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NoteApi;
 using NoteApi.Interfaces;
-using NoteApi.Repositories;
 using NoteApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -15,11 +15,10 @@ public class NotesService : INotesService
     }
 
     public async Task<Note> CreateAsync(
-        string title,
-        string content,
+        CreateNoteRequest request,
         CancellationToken cancellationToken)
     {
-        var note = new Note(title, content);
+        var note = new Note(request.Title, request.Content);
 
         _db.Notes.Add(note);
         await _db.SaveChangesAsync(cancellationToken);

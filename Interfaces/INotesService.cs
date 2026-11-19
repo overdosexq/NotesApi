@@ -5,7 +5,7 @@ namespace NoteApi.Interfaces;
 
 public interface INotesService
 {
-    Task<Note> CreateAsync(string title, string content, CancellationToken cancellationToken);
+    Task<Note> CreateAsync(CreateNoteRequest request, CancellationToken cancellationToken);
     Task<Note?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     Task<List<Note>> GetAllAsync(CancellationToken cancellationToken);
     Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken);
