@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using NoteApi.DTOs;
 using NoteApi.Interfaces;
 using NoteApi.Models;
 
@@ -5,30 +7,90 @@ namespace NoteApi.Services;
 
 public class NotesService : INotesService
 {
-    INotesRepository _notesRepository;
+    private readonly NotesDbContext _db;
 
-    public NotesService(INotesRepository notesRepository)
+    public NotesService(NotesDbContext db)
     {
-        _notesRepository = notesRepository;
+        _db = db;
     }
 
-    public Note Create(string title, string content)
+    public async Task<Note> CreateAsync(
+        string title,
+        string content,
+        CancellationToken cancellationToken)
     {
-        return _notesRepository.Create(new Note(title, content));
+        var note = new Note(title, content);
+
+        _db.Notes.Add(note);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return note;
     }
 
-    public Note? GetById(Guid id)
+    public Task<Note?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        return _notesRepository.GetById(id);
+        return _db.Notes
+            .AsNoTracking()
+            .FirstOrDefaultAsync(n => n.Id == id, cancellationToken);
     }
     
-    public IEnumerable<Note>? GetAll()
+    public Task<List<Note>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return _notesRepository.GetAll();
+        return _db.Notes
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
     }
 
-    public bool Delete(Guid id)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        return _notesRepository.Delete(id);
+        var note = await _db.Notes
+            .FirstOrDefaultAsync(note => note.Id == id, cancellationToken);
+
+        if (note is null)
+            return false;
+
+        _db.Notes.Remove(note);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return true;
+    }
+
+    public async Task<Note?> PutAsync(
+        Guid id,
+        PutNoteRequest request,
+        CancellationToken cancellationToken)
+    {
+        var note = await _db.Notes
+            .FirstOrDefaultAsync(note => note.Id == id, cancellationToken);
+
+        if (note is null)
+            return null;
+
+        note.Title = request.Title;
+        note.Content = request.Content;
+
+        await _db.SaveChangesAsync(cancellationToken);
+        return note;
+    }
+
+    public async Task<Note?> PatchAsync(
+        Guid id,
+        PatchNoteRequest request,
+        CancellationToken cancellationToken)
+    {
+        var note = await _db.Notes
+            .FirstOrDefaultAsync(note => note.Id == id, cancellationToken);
+
+        if (note is null)
+            return null;
+
+        if (request.Title is not null)
+            note.Title = request.Title;
+
+        if (request.Content is not null)
+            note.Content = request.Content;
+
+        await _db.SaveChangesAsync(cancellationToken);
+        return note;
     }
 }

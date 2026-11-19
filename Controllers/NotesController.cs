@@ -17,35 +17,70 @@ public class NotesController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<Note> Create(CreateNoteRequest request)
+    public async Task<ActionResult<NoteResponse>> Create(CreateNoteRequest request, CancellationToken cancellationToken)
     {
-        var createdNote = _notesService.Create(request.Title, request.Content);
-        return Ok(createdNote);
+        var createdNote = await _notesService.CreateAsync(request.Title, request.Content, cancellationToken);
+        return CreatedAtAction(nameof(GetById),
+         new { id = createdNote.Id },
+         ToResponse(createdNote));
     }    
     
     [HttpGet("{id:guid}")]
-    public ActionResult<Note> GetById(Guid id)
+    public async Task<ActionResult<NoteResponse>> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var note = _notesService.GetById(id);
-        if (note is not null)
-            return Ok(note);
-        return NotFound();
+        var note = await _notesService.GetByIdAsync(id, cancellationToken);
+        if (note is null)
+            return NotFound();
+
+
+        return Ok(ToResponse(note));
     }    
     
     [HttpGet]
-    public ActionResult<IEnumerable<Note>> GetAll()
+    public async Task<ActionResult<IEnumerable<NoteResponse>>> GetAll(CancellationToken cancellationToken)
     {
-        var notes = _notesService.GetAll();
-        if (notes is not null && notes.Any())
-            return Ok(notes);
-        return NoContent();
+        var notes = await _notesService.GetAllAsync(cancellationToken);
+        return Ok(notes.Select(ToResponse));
     }
 
     [HttpDelete("{id:guid}")]
-    public IActionResult Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var isDeleted = _notesService.Delete(id);
+        var isDeleted = await _notesService.DeleteAsync(id, cancellationToken);
         if (!isDeleted) return NotFound();
         return NoContent();
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<NoteResponse>> Put(
+        Guid id,
+        PutNoteRequest request,
+        CancellationToken cancellationToken)
+    {
+        var note = await _notesService.PutAsync(id, request, cancellationToken);
+        if (note is null) return NotFound();
+        return Ok(ToResponse(note));
+    }
+
+    [HttpPatch("{id:guid}")]
+    public async Task<ActionResult<NoteResponse>> Patch(
+        Guid id,
+        PatchNoteRequest request,
+        CancellationToken cancellationToken)
+    {
+        var note = await _notesService.PatchAsync(id, request, cancellationToken);
+        if (note is null) return NotFound();
+        return Ok(ToResponse(note));
+    }
+
+    private static NoteResponse ToResponse(Note note)
+    {
+        return new NoteResponse
+        {
+            Id = note.Id,
+            Title = note.Title,
+            Content = note.Content,
+            CreatedAt = note.CreatedAt
+        };
     }
 }
